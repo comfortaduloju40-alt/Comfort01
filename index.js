@@ -1,98 +1,138 @@
 const { Telegraf, Markup } = require('telegraf');
 const express = require('express');
 
-// Initialize Express for Render.com's port requirement
+// --- SERVER SETUP FOR RENDER ---
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.get('/', (req, res) => res.send('AI-Trading Core Online'));
+app.listen(PORT, () => console.log(`[SYSTEM] Core active on port ${PORT}`));
 
-app.get('/', (req, res) => res.send('Bot is running!'));
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-// Initialize Bot
+// --- BOT INITIALIZATION ---
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// Simple in-memory state for demonstration
-// In a real app, use a database
+// User State Management
 const userState = new Map();
 
-// Main Menu Keyboard
-const mainMenu = Markup.inlineKeyboard([
-  [Markup.button.callback('💰 Deposit', 'deposit'), Markup.button.callback('📈 Trade', 'trade')],
-  [Markup.button.callback('⏯ Start / Stop', 'toggle')],
-  [Markup.button.callback('💸 Withdraw', 'withdraw'), Markup.button.callback('❓ Help', 'help')]
-]);
+// UI Constants for 2026 Theme
+const HEADER = "✨ ᴠᴇʟᴏᴄɪᴛʏ ᴀɪ | ɴᴇxᴛ-ɢᴇɴ ᴛʀᴀᴅɪɴɢ ✨";
+const DIVIDER = "━━━━━━━━━━━━━━━━━━━━";
 
-// Start Command
+// Main Menu Generator
+const getMainMenu = () => {
+  return Markup.inlineKeyboard([
+    [Markup.button.callback('📥 DEPOSIT', 'deposit'), Markup.button.callback('📈 LIVE TRADE', 'trade')],
+    [Markup.button.callback('⚡ START / STOP SYSTEM', 'toggle')],
+    [Markup.button.callback('💸 WITHDRAW', 'withdraw'), Markup.button.callback('ℹ️ SYSTEM INFO', 'help')]
+  ]);
+};
+
+// --- HANDLERS ---
+
 bot.start((ctx) => {
-  ctx.reply(
-    'Welcome to the Demo Trading Bot! 🚀\nChoose an option below to begin.',
-    mainMenu
-  );
+  const welcomeMsg = `
+${HEADER}
+${DIVIDER}
+Welcome, **${ctx.from.first_name}**. 
+System Status: 🟢 **OPTIMAL**
+
+The Velocity AI Core is ready to process market fluctuations and generate high-frequency returns.
+
+Select a module from the terminal below:
+`;
+  ctx.replyWithMarkdown(welcomeMsg, getMainMenu());
 });
 
-// 1. Deposit Handler
+// 1. Advanced Deposit Handler
 bot.action('deposit', (ctx) => {
-  const randomAddress = '0x' + [...Array(40)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
-  ctx.reply(`📥 Deposit ETH here:\n\`${randomAddress}\`\n\n(Demo purposes only - do not send real funds!)`, { parse_mode: 'MarkdownV2' });
+  const wallet = '0x' + [...Array(40)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+  ctx.replyWithMarkdown(`
+${HEADER}
+${DIVIDER}
+🔹 **PERSONAL DEPOSIT GATEWAY**
+Address: \`${wallet}\`
+
+⚠️ **NETWORK:** Ethereum (ERC-20)
+_Funds will be automatically credited after 2 network confirmations._
+
+[DEMO ONLY - DO NOT SEND REAL ASSETS]
+`, getMainMenu());
 });
 
-// 2. Trade Handler
+// 2. High-Frequency Trade Simulation
 bot.action('trade', (ctx) => {
-  ctx.reply('Hurry! I am entering the ETH market now to make profits for you 🚀');
+  ctx.replyWithMarkdown(`
+🚀 **AI AGENT DEPLOYED**
+${DIVIDER}
+Analyzing Order Books...
+Matched: **BTC/USDT Long** 🟢
+Execution Price: **$104,231.50**
+
+_Maintaining 98.4% Alpha Efficiency..._
+`);
 });
 
-// 3. Start/Stop Toggle Handler
+// 3. System Toggle
 bot.action('toggle', (ctx) => {
   const userId = ctx.from.id;
-  const isTrading = userState.get(userId) || false;
+  const isActive = userState.get(userId) || false;
   
-  if (!isTrading) {
+  if (!isActive) {
     userState.set(userId, true);
-    ctx.reply('✅ Trading started successfully.');
+    ctx.replyWithMarkdown("✅ **SYSTEM ENGAGED.** AI is now monitoring liquidity pools.");
   } else {
     userState.set(userId, false);
-    ctx.reply('🛑 Trading stopped.');
+    ctx.replyWithMarkdown("🛑 **SYSTEM DISENGAGED.** All positions closed.");
   }
 });
 
-// 4. Withdraw Handler
+// 4. Withdrawal with Transaction Link
 bot.action('withdraw', (ctx) => {
-  ctx.reply('Please enter your Ethereum address to receive your profits:');
-  // Set a flag so the next text message is treated as an address
+  ctx.replyWithMarkdown(`
+💸 **WITHDRAWAL REQUEST**
+${DIVIDER}
+Please enter your **BTC/ETH Destination Address** below.
+_Current Available Balance: 10.42 ETH_
+`);
   userState.set(`${ctx.from.id}_awaiting_withdraw`, true);
 });
 
-// 5. Help Handler
-bot.action('help', (ctx) => {
-  ctx.reply(
-    '📖 *Help & Info*\n\n' +
-    'This is a **DEMO** trading bot.\n\n' +
-    '• No real funds are involved.\n' +
-    '• All balances and profits are simulated.\n' +
-    '• This bot is for educational/demonstration purposes only.',
-    { parse_mode: 'Markdown' }
-  );
-});
-
-// Text Message Handler (for Withdrawal address)
+// Text Handler (Capture address and generate fake txn)
 bot.on('text', (ctx) => {
   const userId = ctx.from.id;
   if (userState.get(`${userId}_awaiting_withdraw`)) {
     userState.delete(`${userId}_awaiting_withdraw`);
-    ctx.reply(`Congratulations 🎉 10 ETH profit is on its way to your address: ${ctx.message.text}`);
-  } else {
-    ctx.reply('Use the menu to interact with the bot:', mainMenu);
+    
+    // Generate random Hash and Access Code
+    const txnHash = [...Array(64)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+    const accessCode = "VAX-" + Math.floor(Math.random() * 1000000).toString(16).toUpperCase();
+    
+    ctx.replyWithMarkdown(`
+🎉 **SUCCESSFUL DISBURSEMENT**
+${DIVIDER}
+Amount: **10.00 ETH**
+Access Code: \`${accessCode}\`
+Status: **BROADCASTING**
+
+🔗 [VIEW ON BLOCKCHAIN](https://www.blockchain.com/explorer/transactions/btc/${txnHash})
+
+_Please allow 10-30 minutes for global sync._
+`, getMainMenu());
   }
 });
 
-// Error handling
-bot.catch((err, ctx) => {
-  console.log(`Ooops, encountered an error for ${ctx.updateType}`, err);
+// 5. Help Info
+bot.action('help', (ctx) => {
+  ctx.replyWithMarkdown(`
+${HEADER}
+${DIVIDER}
+🤖 **CORE VERSION:** v4.2.0 (2026 Build)
+🌐 **LATENCY:** 2ms
+📊 **ALGORITHM:** Neural-Liquid-v9
+
+_This bot is a tech-demonstration. No real value is processed or stored._
+`, getMainMenu());
 });
 
-// Launch Bot
 bot.launch();
-
-// Enable graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
