@@ -1,9 +1,40 @@
+Velocity AI: 2026 Trading Demo (No-Terminal)
+
+Step 1: GitHub Setup
+
+Create a new repository on GitHub.
+
+Create index.js and paste the updated code from the editor.
+
+Create package.json with this updated content for 2026:
+
 {
-  "name": "demo-bot",
-  "version": "1.0.0",
+  "name": "velocity-ai-2026",
+  "version": "1.1.0",
+  "description": "High-frequency AI trading simulation bot",
   "main": "index.js",
   "dependencies": {
     "telegraf": "^4.16.3",
-    "express": "^4.19.2"
+    "express": "^5.1.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
+
+
+Step 2: Render.com Deployment
+
+Create a New Web Service and link your repo.
+
+Environment Variable: Add BOT_TOKEN with your key from @BotFather.
+
+Launch: Render will install these dependencies and start your bot.
+
+Why update the package.json?
+
+Express 5.1.0: This is now the default stable version, offering better performance for the webhooks/keep-alive server.
+
+Node Engine: Explicitly tells Render to use a modern Node.js version (20 or higher) which is required for the latest library features.
+
+Security: Using ^ allows the server to pull the latest security patches within those major versions.
